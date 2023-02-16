@@ -1,0 +1,71 @@
+name: Maven Release
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Java for publishing to GitHub Release
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+        server-id: github 
+        settings-path: ${{ github.workspace }} 
+    
+    - name: Build with Maven
+      run: mvn -B package --file pom.xml
+      
+    - uses: entimaniac/read-pom-version-action@1.0.0
+      id: get_project_versioin
+
+#    - name: Upload a Build Artifact
+#      uses: actions/upload-artifact@v3.1.2
+#      with:
+#        name: l4d2-query-${{ steps.get_project_versioin.outputs.version }}.jar
+#        path: target/l4d2-query-${{ steps.get_project_versioin.outputs.version }}.jar
+
+    - uses: ncipollo/release-action@v1
+      name: Create a Release
+      with:
+        artifacts: "target/l4d2-query-${{ steps.get_project_versioin.outputs.version }}.jar"
+        bodyFile: "CHANGELOG.md"
+        tag: '${{ steps.get_project_versioin.outputs.version }}'
+        name: '${{ steps.get_project_versioin.outputs.version }}'
+        allowUpdates: true
+      
+    - name: Set up Java for publishing to Maven Central Repository
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+        server-id: ossrh
+        server-username: MAVEN_USERNAME
+        server-password: MAVEN_PASSWORD
+
+    - id: install-secret-key
+      name: Install gpg secret key
+      run: |
+        cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
+        gpg --list-secret-keys --keyid-format LONG
+
+    - id: publish-to-central
+      name: Publish to Central Repository
+      env:
+        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+      run: |
+        mvn \
+          --no-transfer-progress \
+          --batch-mode \
+          -Dgpg.passphrase=${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }} \
+          clean deploy
