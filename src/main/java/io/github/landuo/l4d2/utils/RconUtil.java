@@ -24,6 +24,11 @@ import java.util.Random;
  */
 public class RconUtil {
 
+    protected static String send(String ip, Integer port, String password) {
+        RconRequest request = new RconRequest(ip, port, password, "status");
+        return send(request);
+    }
+
     /**
      * 发送指令到服务器上
      *
@@ -105,7 +110,8 @@ public class RconUtil {
         bb.order(ByteOrder.LITTLE_ENDIAN);
         int packetSize = bb.getInt();
         int requestId = bb.getInt();
-        if (requestId == -1) {
+        // 不知为啥0也是密码错误
+        if (requestId == -1 || requestId == 0) {
             throw new ServiceException(400, "Password error.");
         }
         if (requestId == id) {

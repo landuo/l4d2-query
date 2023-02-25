@@ -1,11 +1,15 @@
 package io.github.landuo.l4d2.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author accidia
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Player {
     /**
      * Index of player chunk starting from 0.
