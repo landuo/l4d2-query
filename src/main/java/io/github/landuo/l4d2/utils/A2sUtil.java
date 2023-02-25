@@ -61,6 +61,10 @@ public class A2sUtil {
         return (System.currentTimeMillis() - current);
     }
 
+    public static Map<String, String> getA2sRules(String ip, Integer port) {
+        return getA2sRules(ip + ":" + port);
+    }
+
     /**
      * Returns the server rules, or configuration variables in name/value pairs.
      *
@@ -115,6 +119,10 @@ public class A2sUtil {
         return result;
     }
 
+    public static SourceServerInfo getA2sInfo(String ip, Integer port) {
+        return getA2sInfo(ip + ":" + port);
+    }
+
     /**
      * 查询服务器信息
      *
@@ -137,6 +145,10 @@ public class A2sUtil {
         result.put("times", getPing(ipPort));
         ObjectMapper mapper = new ObjectMapper();
         return mapper.convertValue(result, SourceServerInfo.class);
+    }
+
+    public static A2sPlayers getPlayers(String ip, Integer port) {
+        return getPlayers(ip + ":" + port);
     }
 
     /**
